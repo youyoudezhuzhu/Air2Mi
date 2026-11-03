@@ -1,0 +1,16 @@
+node_modules/
+**/dist/
+/build/
+/.cache/
+/artifacts/
+/.local/
+*.fpk
+*.run
+*.sock
+*.key
+*.pem
+.env
+.env.*
+__pycache__/
+*.pyc
+/reports/*.log
