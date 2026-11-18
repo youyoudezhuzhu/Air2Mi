@@ -1,0 +1,47 @@
+name: Publish Engine updates
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing public Engine binary tag to distribute
+        required: true
+        default: engine-0.3.11-beta.14-public-hardened
+  release:
+    types: [published]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: engine-pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false
+    runs-on: ubuntu-latest
+    environment: github-pages
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install cryptography==46.0.3
+      - if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+          path: assets
+      - if: github.event_name == 'release'
+        run: gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir assets -p '*.run' -p '*.manifest.json' -p '*-components.zip'
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+          GH_TOKEN: ${{ github.token }}
+      - run: python tools/publish_engine_pages.py
+        env:
+          UPDATE_KEY_B64: ${{ secrets.AIR2MI_UPDATE_KEY_B64 }}
+          UPDATE_SEQUENCE: ${{ github.run_number }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4
