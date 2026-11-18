@@ -1,10 +1,10 @@
 # Air2Mi
 
-Air2Mi 跨平台管理应用。第一阶段开发飞牛 fnOS 原生 FPK：管理独立 Air2Mi Engine，通过真实 API 展示接收器、妙播音箱和 River 状态。
+Air2Mi 在局域网中接收 AirPlay 2 音频，并通过妙播输出到兼容音箱。管理端用于发现设备、配置接收器和查看播放状态。
 
-- `main`：基础结构与项目说明。
-- `fnpack`：fnOS Host、Vue 3 Web UI、FPK 打包及验证。
+| 平台 | 管理端 | 公开测试内核 |
+| --- | --- | --- |
+| 飞牛 fnOS / Linux x64 | [fnOS 管理端、打包与安装说明](https://github.com/youyoudezhuzhu/Air2Mi/tree/fnpack) | Linux 单文件运行包 |
+| Android ARM64 | [Android 管理端与构建说明](https://github.com/youyoudezhuzhu/Air2Mi/tree/android) | 可在设置中导入的组件 ZIP |
 
-Engine 由独立的内核项目开发和编译。本仓库不复制或维护 AirPlay/MiPlay/River 源码，只引用固定构建产物。App 与 Engine 分别版本化。
-
-Windows 和 Android 宿主以后独立规划，本阶段不创建空壳工程。
+内核和应用分别发布。下载页提供平台要求、离线校验命令和外部校准文件示例。[内核 0.3.11-beta.14 公开测试版](https://github.com/youyoudezhuzhu/Air2Mi/tree/engine-0.3.11-beta.14-public-hardened)
