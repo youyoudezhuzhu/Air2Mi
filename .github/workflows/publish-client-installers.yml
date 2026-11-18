@@ -1,0 +1,40 @@
+name: Publish client installers
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-client-installers.yml']
+permissions:
+  contents: write
+concurrency:
+  group: publish-client-installers
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      TAG: clients-20261118-beta.1
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 3883daa386b519bec58767cf50a695241e20e5bf
+          persist-credentials: false
+      - name: Verify installer bytes
+        run: sha256sum -c SHA256SUMS
+      - name: Publish both installers under Assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --verify-tag --draft --prerelease \
+              --title "Air2Mi 客户端测试版 · fnOS 0.1.14 / Android 1.1.2" --notes-file README.md
+          fi
+          if [[ "$(gh release view "$TAG" --json isDraft --jq .isDraft)" == true ]]; then
+            gh release upload "$TAG" Air2Mi.fpk Air2Mi-arm64.apk SHA256SUMS --clobber
+            gh release edit "$TAG" --draft=false --prerelease
+          fi
+          mkdir verify
+          gh release download "$TAG" --dir verify -p Air2Mi.fpk -p Air2Mi-arm64.apk -p SHA256SUMS
+          cmp SHA256SUMS verify/SHA256SUMS
+          (cd verify && sha256sum -c SHA256SUMS)
