@@ -19,6 +19,16 @@ def encode(value):
     return base64.urlsafe_b64encode(value).rstrip(b'=').decode()
 
 def build():
+    seed = os.environ.get('UPDATE_KEY_B64')
+    if not seed:
+        raise ValueError('Configure AIR2MI_UPDATE_KEY_B64 with the existing catalog signing key')
+    key = Ed25519PrivateKey.from_private_bytes(base64.b64decode(seed, validate=True))
+    public = key.public_key().public_bytes(Encoding.Raw,PublicFormat.Raw)
+    if public != base64.b64decode(Path(__file__).with_name('update-trust.pub').read_bytes()):
+        raise ValueError('Signing key does not match installed clients')
+    sequence = int(os.environ['UPDATE_SEQUENCE'])
+    if sequence <= 2026111401:
+        raise ValueError('Update sequence must exceed the last pre-migration catalog')
     source = Path('assets')
     linux, = source.glob('*.run')
     android, = source.glob('*-components.zip')
@@ -56,11 +66,6 @@ def build():
             raise ValueError('Mixed Engine builds: '+field)
     if meta['sha256'] != digest(linux):
         raise ValueError('Linux checksum mismatch')
-    key = Ed25519PrivateKey.from_private_bytes(base64.b64decode(os.environ['UPDATE_KEY_B64'], validate=True))
-    public = key.public_key().public_bytes(Encoding.Raw,PublicFormat.Raw)
-    if public != base64.b64decode(Path(__file__).with_name('update-trust.pub').read_bytes()):
-        raise ValueError('Signing key does not match installed clients')
-    sequence = int(os.environ['UPDATE_SEQUENCE'])
     site = Path('site')
     dl = site/'dl'
     dl.mkdir(parents=True)

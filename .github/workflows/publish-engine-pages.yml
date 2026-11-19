@@ -1,7 +1,9 @@
 name: Publish Engine updates
 on:
   push:
+    branches: [main]
     tags: ['publish-engine-*']
+    paths: ['.github/workflows/publish-engine-pages.yml', 'tools/publish_engine_pages.py']
   workflow_dispatch:
     inputs:
       tag:
@@ -19,7 +21,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
-    if: github.event_name != 'release' || github.event.release.prerelease == false
+    if: github.event_name != 'release' || (!github.event.release.prerelease && startsWith(github.event.release.tag_name, 'engine-'))
     runs-on: ubuntu-latest
     environment: github-pages
     steps:
@@ -33,7 +35,13 @@ jobs:
         env:
           MANUAL_TAG: ${{ inputs.tag }}
         run: |
-          tag="${MANUAL_TAG:-${GITHUB_REF_NAME#publish-}}"
+          if [[ -n "$MANUAL_TAG" ]]; then
+            tag="$MANUAL_TAG"
+          elif [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            tag="${GITHUB_REF_NAME#publish-}"
+          else
+            tag=engine-0.3.11-beta.14-public-hardened
+          fi
           git check-ref-format "refs/tags/$tag"
           [[ "$tag" == engine-* ]]
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
@@ -47,11 +55,11 @@ jobs:
         env:
           TAG: ${{ github.event.release.tag_name }}
           GH_TOKEN: ${{ github.token }}
+      - uses: actions/configure-pages@v5
       - run: python tools/publish_engine_pages.py
         env:
           UPDATE_KEY_B64: ${{ secrets.AIR2MI_UPDATE_KEY_B64 }}
-          UPDATE_SEQUENCE: ${{ github.run_number }}
-      - uses: actions/configure-pages@v5
+          UPDATE_SEQUENCE: ${{ github.run_id }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
