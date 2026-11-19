@@ -1,0 +1,13 @@
+<resources>
+    <!-- Apply from the launch frame, before the WebView is attached. -->
+    <style name="Theme.Air2Mi" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#f7f9fc</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>

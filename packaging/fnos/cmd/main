@@ -1,0 +1,32 @@
+#!/bin/sh
+set -eu
+: "${TRIM_APPDEST:?}" "${TRIM_PKGVAR:?}"
+engine_host="$TRIM_APPDEST/bin/air2mi-host"
+app_socket="$TRIM_APPDEST/air2mi.sock"
+case "${1:-}" in
+ start)
+   mkdir -p "$TRIM_PKGVAR"
+   chmod 700 "$TRIM_PKGVAR"
+   if "$engine_host" --data "$TRIM_PKGVAR" --socket "$app_socket" --status; then exit 0; fi
+   "$engine_host" --data "$TRIM_PKGVAR" --socket "$app_socket" --bundle "$TRIM_APPDEST/engine" --web "$TRIM_APPDEST/web" >> "$TRIM_PKGVAR/app.log" 2>&1 < /dev/null &
+   attempt=0
+   while [ "$attempt" -lt 60 ]; do
+     if "$engine_host" --data "$TRIM_PKGVAR" --socket "$app_socket" --status; then exit 0; fi
+     attempt=$((attempt+1))
+     sleep 1
+   done
+   exit 1
+   ;;
+ stop)
+   if "$engine_host" --data "$TRIM_PKGVAR" --socket "$app_socket" --status; then
+     "$engine_host" --data "$TRIM_PKGVAR" --socket "$app_socket" --stop
+   else
+     # The UI Host may have crashed while its Engine child survived. In that
+     # case stop the signed, app-owned Engine directly instead of reporting a
+     # successful stop while leaving audio services orphaned.
+     "$engine_host" --data "$TRIM_PKGVAR" --bundle "$TRIM_APPDEST/engine" --stop-engine
+   fi
+   ;;
+ status) "$engine_host" --data "$TRIM_PKGVAR" --socket "$app_socket" --status ;;
+ *) exit 2 ;;
+esac

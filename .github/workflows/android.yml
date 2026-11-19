@@ -1,0 +1,51 @@
+name: Air2Mi Android App
+on:
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  android-app:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;34.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.6'
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Android management adapter regressions
+        run: |
+          python3 -m pip install cryptography==46.0.3
+          python3 -m unittest discover -s tests/android -v
+      - name: Build and check shared Web UI
+        working-directory: web
+        run: |
+          npm ci
+          npm run check
+          npm test -- --run
+          npm run build
+      - name: Android adapter responsive UI checks
+        run: node tests/android/browser.mjs
+      - name: Build ARM64 Android manager APK
+        run: gradle -p android :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest
+      - name: Verify Engine is not bundled
+        run: python3 tools/check_android_apk.py android/app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: air2mi-android-app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

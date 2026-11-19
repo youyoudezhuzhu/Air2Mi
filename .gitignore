@@ -1,6 +1,9 @@
 node_modules/
 **/dist/
 /build/
+**/build/
+**/.gradle/
+**/local.properties
 /.cache/
 /artifacts/
 /.local/
@@ -13,4 +16,5 @@ node_modules/
 .env.*
 __pycache__/
 *.pyc
+/reports/screenshots/
 /reports/*.log

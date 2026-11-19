@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kernel_version": "0.3.11",
+  "package_version": "0.3.11-stable.1-hardened",
+  "api_version": "v1",
+  "platform": "linux",
+  "architecture": "x64",
+  "sha256": "472f3c5463421060480b342065f4fffc4d3d9485d17ce6cb93b36da67685764f",
+  "manifest_sha256": "d0631acb52f25c2e838d89fd67820c6e5601122f1a64e8ced7431dcecccb6635",
+  "public_key": "ZqkiZmGINwioKZLIhk54nQcV1YnzZTvSWnFQJJD3WZ0=",
+  "production_update_source": null,
+  "private_distribution_only": true,
+  "arm64_fnos_enabled": false,
+  "distribution": "local-only",
+  "public_app_contains_engine": false
+}

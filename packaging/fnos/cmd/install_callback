@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+# Persistent user data is owned by fnOS and never recursively deleted here.
+exit 0

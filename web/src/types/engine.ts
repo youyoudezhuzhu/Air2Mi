@@ -1,0 +1,17 @@
+export interface Input{id:string;name:string;enabled:boolean;port?:number;options?:{speaker_id?:string}}
+export interface Speaker{id:string;name:string;ip:string;model?:string;enabled:boolean;volume?:number}
+export interface River{selected_inputs?:string[];output_speaker_ids?:string[];playing_speaker_ids?:string[];producer?:string|null;references?:string[];paused?:boolean;generation?:number;output_bytes?:number}
+export interface Route{route_id:string;input_ids:string[];speaker_ids:string[];enabled?:boolean}
+export interface Snapshot{routes?:Route[]|{routes:Route[]};engine_installed?:boolean;configuration_cached?:boolean;test_tone?:{changed_at?:string;first_audio_confirmed?:boolean;frames_sent?:number;id?:string;speaker_id?:string;phase:string;error?:string;device_volume?:number};bind?:string;background?:{service_phase:string};environment?:{platform?:string;android_api?:number;glibc?:string;dbus_socket?:boolean;avahi_socket?:boolean};app_version:string;engine_running:boolean;engine_error?:string;last_error?:string;state_error?:string;inputs_error?:string;speakers_error?:string;engine_manifest:{kernel_version:string;package_version:string;api_version:string;source_commit:string};state?:{instances?:Record<string,{selected:boolean;paused:boolean;ready:boolean;media_ready:boolean}>;kernel?:{state:string};river?:River;speakers?:OutputState[];output_status_available?:boolean};inputs?:Input[]|{inputs:Input[]};speakers?:Speaker[]|{speakers:Speaker[]}}
+export function items<T>(v:T[]|Record<string,T[]>|undefined,k:string):T[]{return Array.isArray(v)?v:v?.[k]||[]}
+export function role(id:string,r?:River){if(r?.producer===id)return r.paused?'已暂停':'当前主源';return r?.references?.includes(id)?'备用音源':'无活动音频'}
+
+export function inputFromEngine(v:any):Input{return {...v,id:v.input_id,name:v.display_name}}
+export function speakerFromEngine(v:any):Speaker{return {...v,id:v.speaker_id,name:v.display_name}}
+export function inputPayload(v:{name:string;enabled:boolean;speaker:string},patch=false){return {...(!patch?{kind:'airplay'}:{}),display_name:v.name,enabled:v.enabled,options:{speaker_id:v.speaker}}}
+export function speakerPayload(v:{id:string;name:string;ip:string;model:string;enabled:boolean},patch=false){return {...(!patch&&v.id?{speaker_id:v.id}:{}),display_name:v.name,ip:v.ip,model:v.model||null,enabled:v.enabled}}
+export interface OutputState{speaker_id:string;display_name:string;input_ids:string[];selected_input_ids:string[];playing_input_ids:string[];selected:boolean;playback_state:'disabled'|'not_selected'|'playing'|'muted'|'paused'|'buffering'|'selected'|'connecting';connected:boolean|null;first_audio_pcm:boolean;frames_sent:number;volume_percent:number|null;volume_source:string|null}
+export function outputFor(s:Snapshot|undefined,id:string):OutputState|undefined{return s?.state?.speakers?.find(output=>output.speaker_id===id)}
+export function outputLabel(output?:OutputState){if(!output)return '状态暂不可用';return ({disabled:'已停用',not_selected:'未选中',playing:'正在播放',muted:'静音',paused:'已选中 · 已暂停',buffering:'已选中 · 缓冲中',selected:'已选中',connecting:'已选中 · 连接中'})[output.playback_state]||'状态暂不可用'}
+
+export function associationOwner(inputs:Input[],speakerID:string,currentID='',routes:Route[]=[]){return inputs.find(input=>input.id!==currentID&&(input.options?.speaker_id===speakerID||routes.some(route=>route.speaker_ids.includes(speakerID)&&route.input_ids.includes(input.id))))}

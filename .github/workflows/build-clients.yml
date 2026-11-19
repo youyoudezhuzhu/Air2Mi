@@ -1,0 +1,10 @@
+name: Build both clients
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fnos:
+    uses: ./.github/workflows/fnpack.yml
+  android:
+    uses: ./.github/workflows/android.yml

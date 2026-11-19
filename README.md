@@ -4,10 +4,21 @@ Air2Mi 在局域网中接收 AirPlay 2 音频，并通过妙播输出到兼容�
 
 | 平台 | 管理端 | 公开测试内核 |
 | --- | --- | --- |
-| 飞牛 fnOS / Linux x64 | [fnOS 管理端、打包与安装说明](https://github.com/youyoudezhuzhu/Air2Mi/tree/fnpack) | Linux 单文件运行包 |
-| Android ARM64 | [Android 管理端与构建说明](https://github.com/youyoudezhuzhu/Air2Mi/tree/android) | 可在设置中导入的组件 ZIP |
+| 飞牛 fnOS / Linux x64 | [fnOS 管理端、打包与安装说明](docs/FNOS.md) | Linux 单文件运行包 |
+| Android ARM64 | [Android 管理端与构建说明](docs/ANDROID_APP.md) | 可在设置中导入的组件 ZIP |
 
 内核和应用分别发布。下载页提供平台要求、离线校验命令和外部校准文件示例。[内核 0.3.11-beta.14 公开测试版](https://github.com/youyoudezhuzhu/Air2Mi/tree/engine-0.3.11-beta.14-public-hardened)
+
+## 应用开发与构建
+
+两个平台共用 `web/` 中的 Vue 页面、状态管理和 API 适配层。`main` 维护稳定源码，`beta` 用于集成测试。改动共享页面后，在同一提交上验证飞牛和 Android。
+
+| 平台 | 宿主和打包入口 | 安装包 |
+| --- | --- | --- |
+| 飞牛 fnOS x64 | `hosts/fnos/` 提供 Go Host，`packaging/fnos/` 和 `tools/build_fpk.py` 生成应用包 | FPK |
+| Android ARM64 | `android/` 提供原生宿主，Gradle 从 `web/dist/` 打包同一界面 | APK |
+
+本地先执行 `npm ci --prefix web` 和 `npm --prefix web run build`，然后按各平台文档构建。测试包可在 Actions 手动运行 **Build both clients**，选择 `main` 或 `beta`，从同一提交生成 FPK 和调试 APK。已发布的安装包可从 [GitHub Releases](https://github.com/youyoudezhuzhu/Air2Mi/releases) 下载。
 
 ## 客户端内核更新
 

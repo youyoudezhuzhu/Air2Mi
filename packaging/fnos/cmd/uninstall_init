@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+"$(dirname "$0")/main" stop
+# Do not remove user data, identity files, registry, backups or configuration.

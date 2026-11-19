@@ -1,0 +1,7 @@
+{
+  "file": "air2mi-python-runtime.aar",
+  "sha256": "6451be6ee912c34820639107f8b0342dd58cf9975b72dd0e2e5703fa2c03667c",
+  "size": 13651946,
+  "contains_engine_core": false,
+  "runtime": "Chaquopy Python 3.11 / crypto dependencies only"
+}
